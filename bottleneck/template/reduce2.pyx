@@ -145,46 +145,16 @@ cdef object nansum2_all_DTYPE0(np.flatiter ita, Py_ssize_t stride,
     cdef Py_ssize_t i
     cdef DTYPE0_t ai
     cdef DTYPE0_t asum = 0
-
-    cdef Py_ssize_t remainder = length % 4
-    cdef Py_ssize_t stride2 = 2 * stride
-    cdef Py_ssize_t stride3 = 3 * stride
-    cdef Py_ssize_t stride4 = 4 * stride
-    cdef Py_ssize_t width = (length - (length % 4)) * stride
-    cdef DTYPE0_t x[4]
     cdef char *p
     cdef char *pstop
 
     with nogil:
-        if length >= 8:
-            while PyArray_ITER_NOTDONE(ita):
-                p = <char*>pid(ita)
-                pstop = p + width
-                x[0] = x[1] = x[2] = x[3] = 0
-                while 1:
-                    if p >= pstop:
-                        break
-                    ai = (<DTYPE0_t*>p)[0]
-                    if ai == ai: x[0] += ai
-                    ai = (<DTYPE0_t*>(p + stride))[0]
-                    if ai == ai: x[1] += ai
-                    ai = (<DTYPE0_t*>(p + stride2))[0]
-                    if ai == ai: x[2] += ai
-                    ai = (<DTYPE0_t*>(p + stride3))[0]
-                    if ai == ai: x[3] += ai
-                    p += stride4
-                for i in range(remainder):
-                    ai = (<DTYPE0_t*>p)[0]
-                    if ai == ai: x[0] += ai
-                    p += stride
-                asum += (x[0] + x[1]) + (x[2] + x[3])
-                PyArray_ITER_NEXT(ita)
-        else:
-            while PyArray_ITER_NOTDONE(ita):
-                for i in range(length):
-                    ai = (<DTYPE0_t*>(<char*>pid(ita) + i * stride))[0]
-                    if ai == ai: asum += ai
-                PyArray_ITER_NEXT(ita)
+        while PyArray_ITER_NOTDONE(ita):
+            p = <char*>pid(ita)
+            for i in range(length):
+                ai = (<DTYPE0_t*>(p + i * stride))[0]
+                if ai == ai: asum += ai
+            PyArray_ITER_NEXT(ita)
 
     return asum
 
