@@ -22,8 +22,11 @@ def prepare_modules():
     # Don't attempt to import numpy when it isn't actually needed; this
     # enables pip to install numpy before bottleneck:
     import numpy as np
-    kwargs = {m : {'include_dirs' : [np.get_include()]} for m in modules}
-    kwargs['move']['extra_compile_args'] = ["-std=gnu89"]
+    module_opts = { 'include_dirs' : [np.get_include()],
+                    'extra_compile_args' : ["-ffast-math","-fno-finite-math-only", "-ftree-vectorize"]
+                  }
+    kwargs = {m : module_opts for m in modules}
+    kwargs['move']['extra_compile_args'].append("-std=gnu89")
 
     if CYTHON_AVAILABLE:
         from bottleneck.template.template import make_pyx
